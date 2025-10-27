@@ -25,6 +25,13 @@ public class Player : Character {
     if (Input.GetKeyDown(KeyCode.Space)) {
       Jump();
     }
+
+    if (Input.GetKeyDown(KeyCode.LeftShift)) {
+      Vector3 dodgeDirection = new Vector3(Input.GetAxis("Horizontal"), 0f, Input.GetAxis("Vertical"));
+      if (dodgeDirection != Vector3.zero) {
+        Dodge(dodgeDirection);
+      }
+    }
   }
 
   public override void Attack() {
