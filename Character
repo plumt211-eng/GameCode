@@ -1,135 +1,171 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class Character : MonoBehaviour {
-  //Basic movement and health variables
-  [SerializeField] protected float moveSpeed = 5f;
-  [SerializeField] protected int maxHealth = 100;
-  [SerializeField] protected float jumpForce = 10f;
-  protected int currentHealth;
-  protected bool isGrounded;
+    // Basic movement and health
+    [Header("Movement & Health")]
+    [SerializeField] protected float moveSpeed = 5f;
+    [SerializeField] protected int maxHealth = 100;
+    protected int currentHealth;
 
-  // Dodging variables
-  [SerializeField] protected float dodgeDistance = 5f;
-  [SerializeField] protected float dodgeDuration = 0.25f;
-  [SerializeField] protected float dodgeCooldown = 1f;
-  protected bool isDodging = false;
-  protected bool canDodge = true;
+    // Dodge settings
+    [Header("Dodge Settings")]
+    [SerializeField] protected float dodgeDistance = 5f;
+    [SerializeField] protected float dodgeDuration = 0.25f;
+    [SerializeField] protected float dodgeCooldown = 1f;
+    protected bool isDodging = false;
+    protected bool canDodge = true;
 
-  // Inventory variables
-  protected List<Item> inventory = new List<Item>();
-  protected Dictionary<string, Equipment> equippedItems = new Dictionary<string, Equipment>();
+    // Inventory
+    [Header("Inventory & Equipment")]
+    protected List<Item> inventory = new List<Item>();
+    protected Dictionary<string, Equipment> equippedItems = new Dictionary<string, Equipment>();
 
-  // Inventory abstract methods
-  public abstract bool AddItem(Item item);
-  public abstract bool RemoveItem(Item item);
-  public abstract void UseItem(Item item);
+    // Abstract inventory methods
+    public abstract bool AddItem(Item item);
+    public abstract bool RemoveItem(Item item);
+    public abstract void UseItem(Item item);
 
-  // Equioment abstract methods
-  public abstract void EquipItem(Equipment equipment);
-  public abstract void UnequipItem(Equipment equipment);
-  public abstract bool CanEquip(Equipment equipment);
+    // Abstract equipment methods
+    public abstract void EquipItem(Equipment equipment);
+    public abstract void UnequipItem(Equipment equipment);
+    public abstract bool CanEquip(Equipment equipment);
 
-  // A reference to the character's Rigidbody, for physics-based movement.
-  protected Rigidbody2D body;
-  protected Animator animator;
+    // Physics & animation
+    protected Rigidbody2D body;
+    protected Animator animator;
 
-  // Store active status effects.
-  protected List<StatusEffect> activeStatusEffects = new List<StatusEffect>();
+    // Status effects
+    protected List<StatusEffect> activeStatusEffects = new List<StatusEffect>();
 
-  protected virtual void Awake() {
-    body = GetComponent<Rigidbody2D>();
-    animator = GetComponentinChildren<Animator>();
-  }
-
-  protected virtual void Start() {
-    currentHealth = maxHealth;
-  }
-
-  protected virtual void Update() {
-    // Update status effects.
-    for (int i = activeStatusEffects.Count - 1; i >= 0; i--) {
-      activeStatusEffects[i].OnUpdate();
-      if (activeStatusEffects[i].IsFinished) {
-        activeStatusEffects[i].OnEnd();
-        activeStatusEffects.RemoveAt(i);
-      }
-    }
-  }
-
-  public virtual void TakeDamage(int damageAmount) {
-    currentHealth -= damageAmount;
-    Debug.Log(gameObject.name + " took " + damageAmount + " damage. Current health: " + currentHealth);
-
-    if (currentHealth <=0) {
-      Die();
-    }
-  }
-
-  public abstract void Attack();
-
-  protected virtual void Jump() {
-    if (isGrounded) {
-      body.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-      animator.SetTrigger("Jump");
-      animator.SetBool("IsGrounded", false);
-    }
-  }
-
-  protected virtual void Dodge(Vector3 direction) {
-    if (canDodge && !isDodging) {
-      StartCoroutine(DodgeRoutine(direction));
-      animator.SetTrigger("Dodge")
-    }
-  }
-
-  protected IEnumerator DodgeRoutine(Vector3 direction) {
-    isDodging = true;
-    canDodge = false;
-
-    Vector3 startPosition = body.position;
-    Vector3 endPosition = startPosition + direction.normalized * dodgeDistance;
-
-    float elapsedTime = 0f;
-    while (elapsedTime < dodgeDuration) {
-      body.MovePosition(Vector3.Lerp(startPosition, endPosition, elapsedTime / dodgeDuration));
-      elapsedTime += Time.deltaTime;
-      yield return null;
+    // Initialization
+    protected virtual void Awake() {
+        body = GetComponent<Rigidbody2D>();
+        animator = GetComponentInChildren<Animator>();
     }
 
-    isDodging = false;
-    yield return new WaitForSeconds (dodgeCooldown);
-    canDodge = true;
-  }
-
-  public void ApplyStatusEffect(StatusEffect effect) {
-    effect.OnApply(this);
-    activeStatusEffect.Add(effect);
-  }
-
-  protected virtual void Die() {
-    Debug,Log(gameObject.name + " has died.");
-    if animator != null) {
-      animator.SetBool("IsDead", true);
-  }
-
-  protected virtual void OnCollisionEnter(Collision other) {
-    if(other.gameObject.CompareTag("Ground")) {
-      isGrounded = true;
-      animator.SetBool("IsGrounded", true);
+    protected virtual void Start() {
+        currentHealth = maxHealth;
     }
-  }
 
-  protected virtual void OnCollisionExit(Collision other) {
-      if(other.gameObject.CompareTag("Ground")) {
-        isGrounded = false;
-        animator.SetBool("IsGrounded", false);
+    protected virtual void Update() {
+        UpdateStatusEffects();
     }
-  }
+
+    // -------------------------------------------
+    // MOVEMENT (Top-down)
+    // -------------------------------------------
+    protected virtual void Move(Vector2 direction) {
+        if (isDodging) return;
+
+        Vector2 movement = direction.normalized * moveSpeed;
+        body.velocity = movement;
+
+        // Update animator (if present)
+        if (animator != null) {
+            animator.SetFloat("MoveX", direction.x);
+            animator.SetFloat("MoveY", direction.y);
+            animator.SetBool("IsMoving", direction.sqrMagnitude > 0.01f);
+        }
+    }
+
+    // -------------------------------------------
+    // DODGE
+    // -------------------------------------------
+    protected virtual void Dodge(Vector2 direction) {
+        if (canDodge && !isDodging && direction.sqrMagnitude > 0.1f) {
+            StartCoroutine(DodgeRoutine(direction));
+            animator?.SetTrigger("Dodge");
+        }
+    }
+
+    protected IEnumerator DodgeRoutine(Vector2 direction) {
+        isDodging = true;
+        canDodge = false;
+
+        Vector2 startPosition = body.position;
+        Vector2 endPosition = startPosition + direction.normalized * dodgeDistance;
+
+        float elapsedTime = 0f;
+        while (elapsedTime < dodgeDuration) {
+            body.MovePosition(Vector2.Lerp(startPosition, endPosition, elapsedTime / dodgeDuration));
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+
+        isDodging = false;
+        yield return new WaitForSeconds(dodgeCooldown);
+        canDodge = true;
+    }
+
+    // -------------------------------------------
+    // HEALTH / DAMAGE
+    // -------------------------------------------
+    public virtual void TakeDamage(int damageAmount) {
+        currentHealth -= damageAmount;
+        Debug.Log($"{gameObject.name} took {damageAmount} damage. Current health: {currentHealth}");
+
+        if (currentHealth <= 0) {
+            Die();
+        }
+    }
+
+    protected virtual void Die() {
+        Debug.Log(gameObject.name + " has died.");
+        if (animator != null) {
+            animator.SetBool("IsDead", true);
+        }
+        // Optionally: Destroy(gameObject); or disable controls
+    }
+
+    // -------------------------------------------
+    // STATUS EFFECTS
+    // -------------------------------------------
+    protected void UpdateStatusEffects() {
+        for (int i = activeStatusEffects.Count - 1; i >= 0; i--) {
+            activeStatusEffects[i].OnUpdate();
+            if (activeStatusEffects[i].IsFinished) {
+                activeStatusEffects[i].OnEnd();
+                activeStatusEffects.RemoveAt(i);
+            }
+        }
+    }
+
+    public void ApplyStatusEffect(StatusEffect effect) {
+        effect.OnApply(this);
+        activeStatusEffects.Add(effect);
+    }
+
+    // -------------------------------------------
+    // ABSTRACT METHODS
+    // -------------------------------------------
+    public abstract void Attack();
+
+    // -------------------------------------------
+    // DEBUG VISUALIZATION
+    // -------------------------------------------
+    protected virtual void OnDrawGizmosSelected() {
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawLine(transform.position, transform.position + Vector3.right * dodgeDistance);
+    }
 }
 
+// ------------------------------------------------------
+// Supporting abstract classes
+// ------------------------------------------------------
 public abstract class StatusEffect {
-  public abstract void OnApply(Character target);
-  public abstract void OnUpdate();
-  public abstract void OnEnd();
-  public bool IsFinished { get; protected set; }
+    public abstract void OnApply(Character target);
+    public abstract void OnUpdate();
+    public abstract void OnEnd();
+    public bool IsFinished { get; protected set; }
+}
+
+// Simple stubs for Item / Equipment base classes
+public abstract class Item : ScriptableObject {
+    public string itemName;
+}
+
+public abstract class Equipment : Item {
+    public string equipmentSlot;
 }
