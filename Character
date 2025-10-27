@@ -76,7 +76,6 @@ public abstract class Character : MonoBehaviour {
     protected virtual void Dodge(Vector2 direction) {
         if (canDodge && !isDodging && direction.sqrMagnitude > 0.1f) {
             StartCoroutine(DodgeRoutine(direction));
-            animator?.SetTrigger("Dodge");
         }
     }
 
