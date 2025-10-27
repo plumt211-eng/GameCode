@@ -1,0 +1,27 @@
+using UnityEngine;
+
+public class InventoryManager : MonoBehaviour
+{
+    [SerializeField] private PlayerInventory playerInventory;
+    [SerializeField] private InventoryUI inventoryUI;
+    [SerializeField] private ItemDatabase itemDatabase;
+
+    public void GiveItem(string itemID, int quantity = 1)
+    {
+        Item item = itemDatabase.GetItemByID(itemID);
+        if (item != null && playerInventory.AddItem(item, quantity))
+        {
+            inventoryUI.Refresh(playerInventory.GetInventory());
+        }
+    }
+
+    public void UseItem(string itemID, Character target)
+    {
+        Item item = itemDatabase.GetItemByID(itemID);
+        if (item != null)
+        {
+            playerInventory.UseItem(item, target);
+            inventoryUI.Refresh(playerInventory.GetInventory());
+        }
+    }
+}
