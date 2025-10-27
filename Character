@@ -1,45 +1,36 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class Character : MonoBehaviour {
-    [Header("Movement & Health")]
+    [Header("Movement & Dodge")]
     [SerializeField] protected float moveSpeed = 5f;
     [SerializeField] protected float sprintMultiplier = 1.5f;
-    [SerializeField] protected int maxHealth = 100;
-    protected int currentHealth;
-    protected bool isSprinting = false; // New Sprint Flag
-
-    // Invincibility Frames
-    [Header("Invincibility Settings")]
-    [SerializeField] protected bool enableInvincibilityFrames = true;
-    [SerializeField] protected float invincibilityDuration = 0.25f;
-    protected bool isInvincible = false; // i-frame flag
-
-    [Header("Dodge Settings")]
     [SerializeField] protected float dodgeDistance = 5f;
     [SerializeField] protected float dodgeDuration = 0.25f;
     [SerializeField] protected float dodgeCooldown = 1f;
-    protected bool isDodging = false;
-    protected bool canDodge = true;
 
-    [Header("Inventory & Equipment")]
+    [Header("Health")]
+    [SerializeField] protected int maxHealth = 100;
+    protected int currentHealth;
+
+    [Header("Components")]
+    [HideInInspector] public Rigidbody2D body;
+    [HideInInspector] public Animator animator;
+
+    [Header("State Flags")]
+    [HideInInspector] public bool isDodging = false;
+    [HideInInspector] public bool canDodge = true;
+    [HideInInspector] public bool isInvincible = false;
+
+    // Inventory & Equipment
     protected List<Item> inventory = new List<Item>();
     protected Dictionary<string, Equipment> equippedItems = new Dictionary<string, Equipment>();
 
-    public abstract bool AddItem(Item item);
-    public abstract bool RemoveItem(Item item);
-    public abstract void UseItem(Item item);
-
-    public abstract void EquipItem(Equipment equipment);
-    public abstract void UnequipItem(Equipment equipment);
-    public abstract bool CanEquip(Equipment equipment);
-
-    protected Rigidbody2D body;
-    protected Animator animator;
-
+    // Status effects
     protected List<StatusEffect> activeStatusEffects = new List<StatusEffect>();
 
+    // State Machine
+    private CharacterState currentState;
 
     protected virtual void Awake() {
         body = GetComponent<Rigidbody2D>();
@@ -48,101 +39,11 @@ public abstract class Character : MonoBehaviour {
 
     protected virtual void Start() {
         currentHealth = maxHealth;
+        ChangeState(new CharacterMoveState(this));
     }
 
     protected virtual void Update() {
-        UpdateStatusEffects();
-    }
-
-
-    protected virtual void Move(Vector2 direction) {
-        if (isDodging) return;
-
-        // Apply sprint multiplier if sprinting
-        float finalSpeed = moveSpeed * (isSprinting ? sprintMultiplier : 1f);
-        Vector2 movement = direction.normalized * finalSpeed;
-        body.velocity = movement;
-
-        // Update animator (if present)
-        if (animator != null) {
-            animator.SetFloat("MoveX", direction.x);
-            animator.SetFloat("MoveY", direction.y);
-            animator.SetBool("IsMoving", direction.sqrMagnitude > 0.01f);
-            animator.SetBool("IsSprinting", isSprinting); // sprint animation flag
-        }
-    }
-
-
-    // Allow subclasses to toggle sprinting
-    public virtual void SetSprinting(bool sprint) {
-        isSprinting = sprint;
-    }
-
-
-    protected virtual void Dodge(Vector2 direction) {
-        if (canDodge && !isDodging && direction.sqrMagnitude > 0.1f) {
-            StartCoroutine(DodgeRoutine(direction));
-        }
-    }
-
-    protected IEnumerator DodgeRoutine(Vector2 direction) {
-        isDodging = true;
-        canDodge = false;
-        animator?.SetBool("IsDodging", true);
-
-        if (enableInvincibilityFrames)
-            StartCoroutine(InvincibilityRoutine(invincibilityDuration));
-
-        Vector2 startPosition = body.position;
-        Vector2 endPosition = startPosition + direction.normalized * dodgeDistance;
-
-        float elapsedTime = 0f;
-        while (elapsedTime < dodgeDuration) {
-            body.MovePosition(Vector2.Lerp(startPosition, endPosition, elapsedTime / dodgeDuration));
-            elapsedTime += Time.deltaTime;
-            yield return null;
-        }
-
-        animator?.SetBool("IsDodging", false);
-        isDodging = false;
-        yield return new WaitForSeconds(dodgeCooldown);
-        canDodge = true;
-    }
-
-    protected IEnumerator InvincibilityRoutine(float duration) {
-        isInvincible = true;
-        Debug.Log($"{gameObject.name} Dodged!");
-
-        yield return new WaitForSeconds(duration);
-
-        isInvincible = false;
-        Debug.Log($"{gameObject.name} is no longer dodging!");
-
-
-    public virtual void TakeDamage(int damageAmount) {
-        if (isInvincible) {
-            Debug.Log($"{gameObject.name} ignored damage!");
-            return;
-        }
-
-        currentHealth -= damageAmount;
-        Debug.Log($"{gameObject.name} took {damageAmount} damage. Current health: {currentHealth}");
-
-        if (currentHealth <= 0) {
-            Die();
-        }
-    }
-
-    protected virtual void Die() {
-        Debug.Log(gameObject.name + " has died.");
-        if (animator != null) {
-            animator.SetBool("IsDead", true);
-        }
-        // Optionally: Destroy(gameObject); or disable controls
-    }
-
-
-    protected void UpdateStatusEffects() {
+        // Update active status effects
         for (int i = activeStatusEffects.Count - 1; i >= 0; i--) {
             activeStatusEffects[i].OnUpdate();
             if (activeStatusEffects[i].IsFinished) {
@@ -150,36 +51,61 @@ public abstract class Character : MonoBehaviour {
                 activeStatusEffects.RemoveAt(i);
             }
         }
+
+        currentState?.Update();
     }
+
+    protected virtual void FixedUpdate() {
+        currentState?.FixedUpdate();
+    }
+
+    public void ChangeState(CharacterState newState) {
+        currentState?.Exit();
+        currentState = newState;
+        currentState.Enter();
+    }
+
+    // Movement
+    public void Move(Vector2 direction, bool sprinting = false) {
+        if (direction.sqrMagnitude > 0.01f) {
+            float speed = moveSpeed * (sprinting ? sprintMultiplier : 1f);
+            Vector2 movement = direction.normalized * speed * Time.deltaTime;
+            body.MovePosition(body.position + movement);
+            animator?.SetBool("IsMoving", true);
+        } else {
+            animator?.SetBool("IsMoving", false);
+        }
+    }
+
+    // Invincibility
+    public void SetInvincibility(bool value) => isInvincible = value;
+
+    // Damage
+    public virtual void TakeDamage(int damageAmount) {
+        if (isInvincible) return;
+
+        currentHealth -= damageAmount;
+        Debug.Log($"{gameObject.name} took {damageAmount} damage. Current health: {currentHealth}");
+
+        if (currentHealth <= 0) Die();
+    }
+
+    protected virtual void Die() {
+        Debug.Log($"{gameObject.name} has died.");
+        animator?.SetBool("IsDead", true);
+    }
+
+    // Abstract methods
+    public abstract void Attack();
+    public abstract bool AddItem(Item item);
+    public abstract bool RemoveItem(Item item);
+    public abstract void UseItem(Item item);
+    public abstract void EquipItem(Equipment equipment);
+    public abstract void UnequipItem(Equipment equipment);
+    public abstract bool CanEquip(Equipment equipment);
 
     public void ApplyStatusEffect(StatusEffect effect) {
         effect.OnApply(this);
         activeStatusEffects.Add(effect);
     }
-
-
-    public abstract void Attack();
-
-
-    protected virtual void OnDrawGizmosSelected() {
-        Gizmos.color = Color.cyan;
-        Gizmos.DrawLine(transform.position, transform.position + Vector3.right * dodgeDistance);
-    }
-}
-
-
-public abstract class StatusEffect {
-    public abstract void OnApply(Character target);
-    public abstract void OnUpdate();
-    public abstract void OnEnd();
-    public bool IsFinished { get; protected set; }
-}
-
-// Simple stubs for Item / Equipment base classes
-public abstract class Item : ScriptableObject {
-    public string itemName;
-}
-
-public abstract class Equipment : Item {
-    public string equipmentSlot;
 }
