@@ -1,10 +1,19 @@
 using UnityEngine;
 
 public class Player : Character {
+    [SerializeField] private float sprintMultiplier = 1.5f;
+
+    protected override void Start() {
+        base.Start();
+        // Start in Idle state
+        ChangeState(new CharacterIdleState(this));
+    }
+
     public override void Attack() {
         Debug.Log($"{gameObject.name} attacks!");
         animator?.SetTrigger("Attack");
     }
+
 
     public override bool AddItem(Item item) {
         inventory.Add(item);
@@ -15,11 +24,11 @@ public class Player : Character {
         return inventory.Remove(item);
     }
 
-    public override void UseItem(Item item) {
+    public override void UseItem(Item item)   {
         Debug.Log($"{gameObject.name} used {item.itemName}");
     }
 
-    public override void EquipItem(Equipment equipment) {
+    public override void EquipItem(Equipment equipment)  {
         equippedItems[equipment.equipmentSlot] = equipment;
     }
 
@@ -28,4 +37,24 @@ public class Player : Character {
     }
 
     public override bool CanEquip(Equipment equipment) => true;
+
+
+    public void Move(Vector2 input, bool isSprinting)
+    {
+        float speed = moveSpeed * (isSprinting ? sprintMultiplier : 1f);
+        Vector2 movement = input.normalized * speed * Time.deltaTime;
+        body.MovePosition(body.position + movement);
+
+        // Update animator
+        animator?.SetBool("IsMoving", input.sqrMagnitude > 0.01f);
+    }
+
+    /// <summary>
+    /// Enables or disables temporary invincibility (for dodges).
+    /// </summary>
+    public void SetInvincibility(bool value)
+    {
+        // This could be expanded to ignore collisions or damage
+        isInvincible = value;
+    }
 }
