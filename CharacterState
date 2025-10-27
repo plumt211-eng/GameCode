@@ -1,0 +1,14 @@
+using UnityEngine;
+
+public abstract class CharacterState {
+    protected Character character;
+
+    public CharacterState(Character character) {
+        this.character = character;
+    }
+
+    public virtual void Enter() { }
+    public virtual void Exit() { }
+    public virtual void Update() { }
+    public virtual void FixedUpdate() { }
+}
