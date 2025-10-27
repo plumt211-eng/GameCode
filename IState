@@ -1,0 +1,8 @@
+using UnityEngine;
+
+public abstract class IState {
+  public void Enter() {}
+  public void Do() {}
+  public void DoBranch() {}
+  public void Exit() {}
+}
