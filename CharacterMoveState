@@ -1,0 +1,22 @@
+using UnityEngine;
+
+public class CharacterMoveState : CharacterState {
+    public CharacterMoveState(Character character) : base(character) { }
+
+    public override void Update() {
+        Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+        bool sprinting = Input.GetKey(KeyCode.LeftShift);
+
+        character.Move(input, sprinting);
+
+        // Dodge input
+        if (Input.GetKeyDown(KeyCode.Space) && character.canDodge) {
+            character.ChangeState(new CharacterDodgeState(character, input));
+        }
+
+        // Attack input
+        if (Input.GetMouseButtonDown(0)) {
+            character.Attack();
+        }
+    }
+}
