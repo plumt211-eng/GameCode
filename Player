@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class PlayerCharacter : Character {
+public class Player : Character {
   protected override void Update() {
     base.Update();
 
