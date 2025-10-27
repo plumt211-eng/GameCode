@@ -54,6 +54,7 @@ public abstract class Character : MonoBehaviour {
     if (isGrounded) {
       body.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
       animator.SetTrigger("Jump");
+      animator.SetBool("IsGrounded", false);
     }
   }
 
@@ -94,9 +95,17 @@ public abstract class Character : MonoBehaviour {
       animator.SetBool("IsDead", true);
   }
 
+  protected virtual void OnCollisionEnter(Collision other) {
+    if(other.gameObject.CompareTag("Ground")) {
+      isGrounded = true;
+      animator.SetBool("IsGrounded", true);
+    }
+  }
+
   protected virtual void OnCollisionExit(Collision other) {
       if(other.gameObject.CompareTag("Ground")) {
         isGrounded = false;
+        animator.SetBool("IsGrounded", false);
     }
   }
 }
