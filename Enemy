@@ -1,0 +1,33 @@
+using UnityEngine;
+
+public class Enemy : Character {
+  public Transform target; // The enemy's target (ie. the player)
+
+  protected override void Start() {
+    base.Start();
+    GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
+    if (playerObject != null) {
+      target = playerObject.transform;
+    }
+  }
+
+  protected void Update() {
+    if (target != null) {
+      ChaseTarget();
+    }
+  }
+
+  private void ChaseTarget() {
+    Vector3 direction = (target.position - transform.position).normalized;
+    Vector3 movement = direction * moveSpeed * Time.deltaTime;
+    body.MovePosition(body.position + movement);
+  }
+
+  public override void Attack() {
+    Debug.Log("Enemy performs an attack!");
+    // Implement enemy attack logic
+  }
+
+  //Use the default Die method for the base class.
+  // No override is needed if the behavior is the same.
+}
