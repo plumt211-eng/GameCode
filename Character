@@ -10,6 +10,12 @@ public abstract class Character : MonoBehaviour {
     protected int currentHealth;
     protected bool isSprinting = false; // New Sprint Flag
 
+    // Invincibility Frames
+    [Header("Invincibility Settings")]
+    [SerializeField] protected bool enableInvincibilityFrames = true;
+    [SerializeField] protected float invincibilityDuration = 0.25f;
+    protected bool isInvincible = false; // i-frame flag
+
     [Header("Dodge Settings")]
     [SerializeField] protected float dodgeDistance = 5f;
     [SerializeField] protected float dodgeDuration = 0.25f;
@@ -82,8 +88,10 @@ public abstract class Character : MonoBehaviour {
     protected IEnumerator DodgeRoutine(Vector2 direction) {
         isDodging = true;
         canDodge = false;
-
         animator?.SetBool("IsDodging", true);
+
+        if (enableInvincibilityFrames)
+            StartCoroutine(InvincibilityRoutine(invincibilityDuration));
 
         Vector2 startPosition = body.position;
         Vector2 endPosition = startPosition + direction.normalized * dodgeDistance;
@@ -96,14 +104,27 @@ public abstract class Character : MonoBehaviour {
         }
 
         animator?.SetBool("IsDodging", false);
-
         isDodging = false;
         yield return new WaitForSeconds(dodgeCooldown);
         canDodge = true;
     }
 
+    protected IEnumerator InvincibilityRoutine(float duration) {
+        isInvincible = true;
+        Debug.Log($"{gameObject.name} Dodged!");
+
+        yield return new WaitForSeconds(duration);
+
+        isInvincible = false;
+        Debug.Log($"{gameObject.name} is no longer dodging!");
+
 
     public virtual void TakeDamage(int damageAmount) {
+        if (isInvincible) {
+            Debug.Log($"{gameObject.name} ignored damage!");
+            return;
+        }
+
         currentHealth -= damageAmount;
         Debug.Log($"{gameObject.name} took {damageAmount} damage. Current health: {currentHealth}");
 
