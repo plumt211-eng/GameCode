@@ -84,6 +84,8 @@ public abstract class Character : MonoBehaviour {
         isDodging = true;
         canDodge = false;
 
+        animator?.SetBool("IsDodging", true);
+
         Vector2 startPosition = body.position;
         Vector2 endPosition = startPosition + direction.normalized * dodgeDistance;
 
@@ -93,6 +95,8 @@ public abstract class Character : MonoBehaviour {
             elapsedTime += Time.deltaTime;
             yield return null;
         }
+
+        animator?.SetBool("IsDodging", false);
 
         isDodging = false;
         yield return new WaitForSeconds(dodgeCooldown);
