@@ -53,15 +53,14 @@ public abstract class Character : MonoBehaviour {
   protected virtual void Jump() {
     if (isGrounded) {
       body.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-      if (animator != null) {
-        animator.SetTrigger("Jump");
-      }
+      animator.SetTrigger("Jump");
     }
   }
 
   protected virtual void Dodge(Vector3 direction) {
     if (canDodge && !isDodging) {
       StartCoroutine(DodgeRoutine(direction));
+      animator.SetTrigger("Dodge")
     }
   }
 
