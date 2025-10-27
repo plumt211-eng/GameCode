@@ -7,7 +7,7 @@ public class Player : Character {
         Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
         bool sprintInput = Input.GetKey(KeyCode.LeftShift);
 
-        SetSprinting(sprintInput); // 🆕 toggle sprinting in base class
+        SetSprinting(sprintInput);
         Move(input);
 
         if (Input.GetKeyDown(KeyCode.Space)) {
