@@ -1,0 +1,31 @@
+using UnityEngine;
+
+public class InventoryToggle : MonoBehaviour
+{
+    [SerializeField] private GameObject inventoryUI; // The parent GameObject of your inventory panel
+    private bool isOpen = false;
+
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Tab))
+        {
+            ToggleInventory();
+        }
+    }
+
+    private void ToggleInventory()
+    {
+        isOpen = !isOpen;
+        inventoryUI.SetActive(isOpen);
+
+        // Optional: Freeze player movement while inventory is open
+        if (isOpen)
+        {
+            Time.timeScale = 0f; // Pause game
+        }
+        else
+        {
+            Time.timeScale = 1f; // Resume game
+        }
+    }
+}
