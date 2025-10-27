@@ -1,58 +1,52 @@
 using UnityEngine;
 
-public class Player : Character {
-  private Camera mainCamera;
+public class PlayerCharacter : Character {
+  protected override void Update() {
+    base.Update();
 
-  protected override void Awake() {
-    base.Awake();
-    mainCamera = Camera.main;
-  }
-
-  protected void Update() {
-    HandleInput();
-  }
-
-  private void HandleInput() {
-    float horizontalInput = Input.GetAxis("Horizontal");
-    float verticalInput = Input.GetAxis("Vertical");
-
-    Vector3 movement = new Vector3(horizontalInput, 0f, verticalInput);
-    body.MovePosition(body.position + movement * moveSpeed * Time.deltaTime);
-
-    float speed = movement.magnitude;
-    animator.SetFloat("Speed", speed);
-
-    if (Input.GetKeyDown(KeyCode.Mouse0)) {
-      Attack();
-    }
+    Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+    Move(input);
 
     if (Input.GetKeyDown(KeyCode.Space)) {
-      Jump();
+         Dodge(input);
     }
 
-    if (Input.GetKeyDown(KeyCode.LeftShift)) {
-      if (movement != Vector3.zero) {
-        Dodge(movement);
-      }
+     if (Input.GetMouseButtonDown(0)) {
+         Attack();
     }
   }
 
+  //-------------------------------------------------------------------------------
+  // ATTACK FUNCTIONS
+  //-------------------------------------------------------------------------------
   public override void Attack() {
-    Debug.Log("Player performs an attack!");
-    animator.SetTrigger("Attack");
+    Debug.Log($"{gameObject.name} attacks!");
+    animator?.SetTrigger("Attack");
   }
 
-  public void PlayerDealDamage(int damage) {
-    Debug.Log("Player is dealing " + damage + " damage with a " add weaponType.");
-    // - Spawn a hitbox
-    // - Perform a SphereCast or OverlapSphere to find enemies
-    // - Checking for a target and dealing damage directly
-    // - Checking for weapon type and calculating
+  //-------------------------------------------------------------------------------
+  // INVENTORY & EQUIPMENT FUNCTIONS
+  //-------------------------------------------------------------------------------
+  public override bool AddItem(Item item) {
+    inventory.Add(item);
+    return true;
   }
 
-  protected override void Die() {
-    Debug.Log("Player has been defeated! Game Over.");
-    //Implement game over logic here.
-    base.Die(); // Call the base Die method to clean up
+  public override bool RemoveItem(Item item) {
+    return inventory.Remove(item);
   }
+
+  public override void UseItem(Item item) {
+    Debug.Log($"{gameObject.name} used {item.itemName}");
+  }
+
+  public override void EquipItem(Equipment equipment) {
+    equippedItems[equipment.equipmentSlot] = equipment;
+  }
+
+  public override void UnequipItem(Equipment equipment) {
+    equippedItems.Remove(equipment.equipmentSlot);
+  }
+
+  public override bool CanEquip(Equipment equipment) => true;
 }
