@@ -1,0 +1,35 @@
+using UnityEngine;
+
+public class Player : Character {
+  private Camera mainCamera;
+
+  protected override void Awake() {
+    base.Awake();
+    mainCamera = Camera.main;
+  }
+
+  protected void Update() {
+    HandleInput();
+  }
+
+  private void HandleInput() {
+    float horizontalInput = Input.GetAxis("Horizontal");
+    float verticalInput = Input.GetAxis("Vertical");
+
+    Vector3 movement = new Vector3(horizontalInput, 0f, verticalInput) * moveSpeed * Time.deltaTime;
+
+    if (Input.GetKeyDown(KeyCode.Mouse0)) {
+      Attack();
+    }
+  }
+
+  public override void Attack() {
+    Debug.Log("Player performs an attack!");
+  }
+
+  protected override void Die() {
+    Debug.Log("Player has been defeated! Game Over.");
+    //Implement game over logic here.
+    base.Die(); // Call the base Die method to clean up
+  }
+}
