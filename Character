@@ -4,10 +4,15 @@ public abstract class Character : MonoBehaviour {
   [SerializeField] protected float moveSpeed = 5f;
   [SerializeField] protected int maxHealth = 100;
   [SerializeField] protected float jumpForce = 10f;
+  [SerializeField] protected float dodgeDistance = 5f;
+  [SerializeField] protected float dodgeDuration = 0.25f;
+  [SerializeField] protected float dodgeCooldown = 1f;
+  protected bool isDodging = false;
+  protected bool canDodge = true;
   protected int currentHealth;
   protected bool isGrounded;
 
-  //A reference to the character's Rigidbody, for physics-based movement.
+  // A reference to the character's Rigidbody, for physics-based movement.
   protected Rigidbody2D body;
   protected Animator animator;
 
@@ -54,6 +59,31 @@ public abstract class Character : MonoBehaviour {
     }
   }
 
+  protected virtual void Dodge(Vector3 direction) {
+    if (canDodge && !isDodging) {
+      StartCoroutine(DodgeRoutine(direction));
+    }
+  }
+
+  protected IEnumerator DodgeRoutine(Vector3 direction) {
+    isDodging = true;
+    canDodge = false;
+
+    Vector3 startPosition = body.position;
+    Vector3 endPosition = startPosition + direction.normalized * dodgeDistance;
+
+    float elapsedTime = 0f;
+    while (elapsedTime < dodgeDuration) {
+      body.MovePosition(Vector3.Lerp(startPosition, endPosition, elapsedTime / dodgeDuration));
+      elapsedTime += Time.deltaTime;
+      yield return null;
+    }
+
+    isDodging = false;
+    yield return new WaitForSeconds (dodgeCooldown);
+    canDodge = true;
+  }
+
   public void ApplyStatusEffect(StatusEffect effect) {
     effect.OnApply(this);
     activeStatusEffect.Add(effect);
@@ -68,9 +98,9 @@ public abstract class Character : MonoBehaviour {
   protected virtual void OnCollisionExit(Collision other) {
       if(other.gameObject.CompareTag("Ground")) {
         isGrounded = false;
-      }
     }
   }
+}
 
 public abstract class StatusEffect {
   public abstract void OnApply(Character target);
