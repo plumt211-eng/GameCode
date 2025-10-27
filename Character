@@ -39,7 +39,7 @@ public abstract class Character : MonoBehaviour {
 
     protected virtual void Start() {
         currentHealth = maxHealth;
-        ChangeState(new CharacterMoveState(this));
+        ChangeState(new CharacterIdleState(this));
     }
 
     protected virtual void Update() {
