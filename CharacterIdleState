@@ -5,29 +5,28 @@ public class CharacterIdleState : CharacterState {
     public CharacterIdleState(Character character) : base(character) { }
 
     public override void Enter() {
-        // Trigger idle animation
         character.animator?.SetBool("IsMoving", false);
     }
 
     public override void Update() {
-        // Check for movement input
         Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
 
+        // Movement input → MoveState
         if (input.sqrMagnitude > 0.01f) {
-            // Transition to move state
             character.ChangeState(new CharacterMoveState(character));
             return;
         }
 
-        // Check for dodge input
+        // Dodge input → DodgeState
         if (Input.GetKeyDown(KeyCode.Space) && character.canDodge) {
             character.ChangeState(new CharacterDodgeState(character, input));
             return;
         }
 
-        // Check for attack input
+        // Attack input → AttackState
         if (Input.GetMouseButtonDown(0)) {
-            character.Attack();
+            character.ChangeState(new CharacterAttackState(character));
         }
     }
 }
+
