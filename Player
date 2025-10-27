@@ -39,6 +39,15 @@ public class Player : Character {
 
   public override void Attack() {
     Debug.Log("Player performs an attack!");
+    animator.SetTrigger("Attack");
+  }
+
+  public void PlayerDealDamage(int damage) {
+    Debug.Log("Player is dealing " + damage + " damage with a " add weaponType.");
+    // - Spawn a hitbox
+    // - Perform a SphereCast or OverlapSphere to find enemies
+    // - Checking for a target and dealing damage directly
+    // - Checking for weapon type and calculating
   }
 
   protected override void Die() {
