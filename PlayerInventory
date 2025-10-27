@@ -1,0 +1,63 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+public class PlayerInventory : MonoBehaviour
+{
+    [SerializeField] private int maxSlots = 20;
+    [SerializeField] private List<InventorySlot> inventory = new List<InventorySlot>();
+
+    public bool AddItem(Item item, int quantity = 1)
+    {
+        // Check for stackable items
+        if (item.isStackable)
+        {
+            InventorySlot slot = inventory.Find(s => s.item == item);
+            if (slot != null)
+            {
+                slot.quantity += quantity;
+                return true;
+            }
+        }
+
+        // Add new slot if space available
+        if (inventory.Count < maxSlots)
+        {
+            inventory.Add(new InventorySlot(item, quantity));
+            return true;
+        }
+
+        Debug.Log("Inventory Full!");
+        return false;
+    }
+
+    public bool RemoveItem(Item item, int quantity = 1)
+    {
+        InventorySlot slot = inventory.Find(s => s.item == item);
+        if (slot == null) return false;
+
+        if (slot.quantity > quantity)
+        {
+            slot.quantity -= quantity;
+        }
+        else
+        {
+            inventory.Remove(slot);
+        }
+        return true;
+    }
+
+    public void UseItem(Item item, Character target)
+    {
+        if (item is Consumable consumable)
+        {
+            consumable.Consume(target);
+            RemoveItem(item);
+        }
+        else
+        {
+            Debug.Log($"{item.itemName} cannot be used directly!");
+        }
+    }
+
+    public List<InventorySlot> GetInventory() => inventory;
+}
