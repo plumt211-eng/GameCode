@@ -1,52 +1,55 @@
 using UnityEngine;
 
 public class Player : Character {
-  protected override void Update() {
-    base.Update();
+    protected override void Update() {
+        base.Update();
 
-    Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
-    Move(input);
+        Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+        bool sprintInput = Input.GetKey(KeyCode.LeftShift);
 
-    if (Input.GetKeyDown(KeyCode.Space)) {
-         Dodge(input);
+        SetSprinting(sprintInput); // 🆕 toggle sprinting in base class
+        Move(input);
+
+        if (Input.GetKeyDown(KeyCode.Space)) {
+            Dodge(input);
+        }
+
+        if (Input.GetMouseButtonDown(0)) {
+            Attack();
+        }
     }
 
-     if (Input.GetMouseButtonDown(0)) {
-         Attack();
+    // -------------------------------------------------------
+    // ATTACK
+    // -------------------------------------------------------
+    public override void Attack() {
+        Debug.Log($"{gameObject.name} attacks!");
+        animator?.SetTrigger("Attack");
     }
-  }
 
-  //-------------------------------------------------------------------------------
-  // ATTACK FUNCTIONS
-  //-------------------------------------------------------------------------------
-  public override void Attack() {
-    Debug.Log($"{gameObject.name} attacks!");
-    animator?.SetTrigger("Attack");
-  }
+    // -------------------------------------------------------
+    // INVENTORY & EQUIPMENT
+    // -------------------------------------------------------
+    public override bool AddItem(Item item) {
+        inventory.Add(item);
+        return true;
+    }
 
-  //-------------------------------------------------------------------------------
-  // INVENTORY & EQUIPMENT FUNCTIONS
-  //-------------------------------------------------------------------------------
-  public override bool AddItem(Item item) {
-    inventory.Add(item);
-    return true;
-  }
+    public override bool RemoveItem(Item item) {
+        return inventory.Remove(item);
+    }
 
-  public override bool RemoveItem(Item item) {
-    return inventory.Remove(item);
-  }
+    public override void UseItem(Item item) {
+        Debug.Log($"{gameObject.name} used {item.itemName}");
+    }
 
-  public override void UseItem(Item item) {
-    Debug.Log($"{gameObject.name} used {item.itemName}");
-  }
+    public override void EquipItem(Equipment equipment) {
+        equippedItems[equipment.equipmentSlot] = equipment;
+    }
 
-  public override void EquipItem(Equipment equipment) {
-    equippedItems[equipment.equipmentSlot] = equipment;
-  }
+    public override void UnequipItem(Equipment equipment) {
+        equippedItems.Remove(equipment.equipmentSlot);
+    }
 
-  public override void UnequipItem(Equipment equipment) {
-    equippedItems.Remove(equipment.equipmentSlot);
-  }
-
-  public override bool CanEquip(Equipment equipment) => true;
+    public override bool CanEquip(Equipment equipment) => true;
 }
