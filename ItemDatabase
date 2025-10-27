@@ -1,0 +1,41 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+[CreateAssetMenu(fileName = "ItemDatabase", menuName = "Inventory/ItemDatabase")]
+public class ItemDatabase : ScriptableObject
+{
+    [System.Serializable]
+    public class ItemEntry
+    {
+        public string id;       // Unique string ID
+        public Item itemAsset;  // Reference to the ScriptableObject
+    }
+
+    [SerializeField] private List<ItemEntry> items = new List<ItemEntry>();
+
+    // Dictionary for fast lookup
+    private Dictionary<string, Item> lookup;
+
+    private void OnEnable()
+    {
+        lookup = new Dictionary<string, Item>();
+        foreach (var entry in items)
+        {
+            if (!lookup.ContainsKey(entry.id))
+                lookup.Add(entry.id, entry.itemAsset);
+            else
+                Debug.LogWarning($"Duplicate item ID detected: {entry.id}");
+        }
+    }
+
+    // Get item by ID
+    public Item GetItemByID(string id)
+    {
+        if (lookup.TryGetValue(id, out Item item))
+        {
+            return item;
+        }
+        Debug.LogWarning($"Item ID '{id}' not found in ItemDatabase!");
+        return null;
+    }
+}
