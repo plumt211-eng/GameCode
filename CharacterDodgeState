@@ -1,0 +1,44 @@
+using UnityEngine;
+
+public class CharacterDodgeState : CharacterState {
+    private Vector2 direction;
+    private float elapsedTime;
+
+    public CharacterDodgeState(Character character, Vector2 direction) : base(character) {
+        this.direction = direction.normalized;
+    }
+
+    public override void Enter() {
+        character.isDodging = true;
+        character.canDodge = false;
+
+        elapsedTime = 0f;
+
+        character.animator?.SetTrigger("Dodge");
+        character.animator?.SetBool("IsDodging", true);
+
+        // Start invincibility frames
+        character.SetInvincibility(true);
+    }
+
+    public override void Update() {
+        if (elapsedTime < character.dodgeDuration) {
+            Vector2 start = character.body.position;
+            Vector2 end = start + direction * character.dodgeDistance;
+            character.body.MovePosition(Vector2.Lerp(start, end, elapsedTime / character.dodgeDuration));
+
+            elapsedTime += Time.deltaTime;
+        } else {
+            Exit();
+            character.ChangeState(new CharacterMoveState(character));
+        }
+    }
+
+    public override void Exit() {
+        character.isDodging = false;
+        character.canDodge = true;
+
+        character.animator?.SetBool("IsDodging", false);
+        character.SetInvincibility(false);
+    }
+}
