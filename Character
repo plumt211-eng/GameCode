@@ -3,13 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class Character : MonoBehaviour {
-    // Basic movement and health
     [Header("Movement & Health")]
     [SerializeField] protected float moveSpeed = 5f;
     [SerializeField] protected int maxHealth = 100;
     protected int currentHealth;
 
-    // Dodge settings
     [Header("Dodge Settings")]
     [SerializeField] protected float dodgeDistance = 5f;
     [SerializeField] protected float dodgeDuration = 0.25f;
@@ -17,29 +15,26 @@ public abstract class Character : MonoBehaviour {
     protected bool isDodging = false;
     protected bool canDodge = true;
 
-    // Inventory
     [Header("Inventory & Equipment")]
     protected List<Item> inventory = new List<Item>();
     protected Dictionary<string, Equipment> equippedItems = new Dictionary<string, Equipment>();
 
-    // Abstract inventory methods
     public abstract bool AddItem(Item item);
     public abstract bool RemoveItem(Item item);
     public abstract void UseItem(Item item);
 
-    // Abstract equipment methods
     public abstract void EquipItem(Equipment equipment);
     public abstract void UnequipItem(Equipment equipment);
     public abstract bool CanEquip(Equipment equipment);
 
-    // Physics & animation
     protected Rigidbody2D body;
     protected Animator animator;
 
-    // Status effects
     protected List<StatusEffect> activeStatusEffects = new List<StatusEffect>();
 
-    // Initialization
+    // --------------------------------------------
+    // INITIALIZATION
+    // --------------------------------------------
     protected virtual void Awake() {
         body = GetComponent<Rigidbody2D>();
         animator = GetComponentInChildren<Animator>();
