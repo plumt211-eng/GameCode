@@ -4,6 +4,7 @@ using UnityEngine;
 public class Item : ScriptableObject
 {
     public string itemName;
+    public string id;              // Unique ID
     public Sprite icon;
     public bool isStackable;
     public int maxStack = 1;
