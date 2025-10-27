@@ -11,13 +11,13 @@ public class CharacterDodgeState : CharacterState {
     public override void Enter() {
         character.isDodging = true;
         character.canDodge = false;
-
         elapsedTime = 0f;
 
+        // Animation
         character.animator?.SetTrigger("Dodge");
         character.animator?.SetBool("IsDodging", true);
 
-        // Start invincibility frames
+        // Invincibility frames
         character.SetInvincibility(true);
     }
 
@@ -30,14 +30,13 @@ public class CharacterDodgeState : CharacterState {
             elapsedTime += Time.deltaTime;
         } else {
             Exit();
-            character.ChangeState(new CharacterMoveState(character));
+            character.ChangeState(new CharacterIdleState(character));
         }
     }
 
     public override void Exit() {
         character.isDodging = false;
         character.canDodge = true;
-
         character.animator?.SetBool("IsDodging", false);
         character.SetInvincibility(false);
     }
