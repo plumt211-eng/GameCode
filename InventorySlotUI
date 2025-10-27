@@ -1,0 +1,22 @@
+using UnityEngine;
+using UnityEngine.UI;
+
+public class InventorySlotUI : MonoBehaviour
+{
+    public Image icon;
+    public Text quantityText;
+
+    public void SetSlot(InventorySlot slot)
+    {
+        icon.sprite = slot.item.icon;
+        icon.enabled = true;
+        quantityText.text = slot.item.isStackable ? slot.quantity.ToString() : "";
+    }
+
+    public void ClearSlot()
+    {
+        icon.sprite = null;
+        icon.enabled = false;
+        quantityText.text = "";
+    }
+}
