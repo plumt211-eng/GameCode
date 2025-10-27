@@ -5,8 +5,10 @@ using UnityEngine;
 public abstract class Character : MonoBehaviour {
     [Header("Movement & Health")]
     [SerializeField] protected float moveSpeed = 5f;
+    [SerializeField] protected float sprintMultiplier = 1.5f;
     [SerializeField] protected int maxHealth = 100;
     protected int currentHealth;
+    protected bool isSprinting = false; // New Sprint Flag
 
     [Header("Dodge Settings")]
     [SerializeField] protected float dodgeDistance = 5f;
@@ -32,9 +34,7 @@ public abstract class Character : MonoBehaviour {
 
     protected List<StatusEffect> activeStatusEffects = new List<StatusEffect>();
 
-    // --------------------------------------------
-    // INITIALIZATION
-    // --------------------------------------------
+
     protected virtual void Awake() {
         body = GetComponent<Rigidbody2D>();
         animator = GetComponentInChildren<Animator>();
@@ -48,13 +48,13 @@ public abstract class Character : MonoBehaviour {
         UpdateStatusEffects();
     }
 
-    // -------------------------------------------
-    // MOVEMENT (Top-down)
-    // -------------------------------------------
+
     protected virtual void Move(Vector2 direction) {
         if (isDodging) return;
 
-        Vector2 movement = direction.normalized * moveSpeed;
+        // Apply sprint multiplier if sprinting
+        float finalSpeed = moveSpeed * (isSprinting ? sprintMultiplier : 1f);
+        Vector2 movement = direction.normalized * finalSpeed;
         body.velocity = movement;
 
         // Update animator (if present)
@@ -62,12 +62,17 @@ public abstract class Character : MonoBehaviour {
             animator.SetFloat("MoveX", direction.x);
             animator.SetFloat("MoveY", direction.y);
             animator.SetBool("IsMoving", direction.sqrMagnitude > 0.01f);
+            animator.SetBool("IsSprinting", isSprinting); // sprint animation flag
         }
     }
 
-    // -------------------------------------------
-    // DODGE
-    // -------------------------------------------
+
+    // Allow subclasses to toggle sprinting
+    public virtual void SetSprinting(bool sprint) {
+        isSprinting = sprint;
+    }
+
+
     protected virtual void Dodge(Vector2 direction) {
         if (canDodge && !isDodging && direction.sqrMagnitude > 0.1f) {
             StartCoroutine(DodgeRoutine(direction));
@@ -94,9 +99,7 @@ public abstract class Character : MonoBehaviour {
         canDodge = true;
     }
 
-    // -------------------------------------------
-    // HEALTH / DAMAGE
-    // -------------------------------------------
+
     public virtual void TakeDamage(int damageAmount) {
         currentHealth -= damageAmount;
         Debug.Log($"{gameObject.name} took {damageAmount} damage. Current health: {currentHealth}");
@@ -114,9 +117,7 @@ public abstract class Character : MonoBehaviour {
         // Optionally: Destroy(gameObject); or disable controls
     }
 
-    // -------------------------------------------
-    // STATUS EFFECTS
-    // -------------------------------------------
+
     protected void UpdateStatusEffects() {
         for (int i = activeStatusEffects.Count - 1; i >= 0; i--) {
             activeStatusEffects[i].OnUpdate();
@@ -132,23 +133,17 @@ public abstract class Character : MonoBehaviour {
         activeStatusEffects.Add(effect);
     }
 
-    // -------------------------------------------
-    // ABSTRACT METHODS
-    // -------------------------------------------
+
     public abstract void Attack();
 
-    // -------------------------------------------
-    // DEBUG VISUALIZATION
-    // -------------------------------------------
+
     protected virtual void OnDrawGizmosSelected() {
         Gizmos.color = Color.cyan;
         Gizmos.DrawLine(transform.position, transform.position + Vector3.right * dodgeDistance);
     }
 }
 
-// ------------------------------------------------------
-// Supporting abstract classes
-// ------------------------------------------------------
+
 public abstract class StatusEffect {
     public abstract void OnApply(Character target);
     public abstract void OnUpdate();
