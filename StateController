@@ -1,0 +1,17 @@
+using UnityEngine;
+
+public class StateController : MonoBehaviour {
+    private IState currentState;
+
+    void Update()
+    {
+        currentState?.OnUpdate();
+    }
+
+    public void ChangeState(IState newState)
+    {
+        currentState?.OnExit();
+        currentState = newState;
+        currentState.OnEnter();
+    }
+}
