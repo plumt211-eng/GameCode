@@ -3,10 +3,33 @@ using UnityEngine;
 public class Player : Character {
     [SerializeField] private float sprintMultiplier = 1.5f;
 
+    public PlayerStateMachine stateMachine;
+    public PlayerIdleState idleState;
+    public PlayerMoveState moveState;
+    public PlayerAttackState attackState;
+    public InventoryOpenState inventoryState;
+
+    [SerializeField] private GameObject inventoryUIPanel;
+
+    protected override void Awake() {
+        base.Awake();
+        stateMachine = new PlayerStateMachine();
+
+        idleState = new PlayerIdleState(this);
+        moveState = new PlayerMoveState(this);
+        attackState = new PlayerAttackState(this);
+        inventoryState = new InventoryOpenState(this, inventoryUIPanel);
+    }
+
     protected override void Start() {
         base.Start();
-        // Start in Idle state
-        ChangeState(new CharacterIdleState(this));
+        stateMachine.Initialize(idleState);
+    }
+
+    protected override void Update() {
+        base.Update();
+        stateMachine.HandleInput();
+        stateMachine.Update();
     }
 
     public override void Attack() {
