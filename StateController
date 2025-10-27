@@ -10,8 +10,8 @@ public class StateController : MonoBehaviour {
 
     public void ChangeState(IState newState)
     {
-        currentState?.OnExit();
+        currentState?.Exit();
         currentState = newState;
-        currentState.OnEnter();
+        currentState.Enter();
     }
 }
