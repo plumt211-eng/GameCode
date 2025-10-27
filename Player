@@ -16,7 +16,11 @@ public class Player : Character {
 
 
     public override bool AddItem(Item item) {
+        if (item.isStackable) {
+            // Optional Implementation of stacking logic here
+        }
         inventory.Add(item);
+        Debug.Log($"{item.itemName} added to inventory!");
         return true;
     }
 
@@ -25,7 +29,11 @@ public class Player : Character {
     }
 
     public override void UseItem(Item item)   {
-        Debug.Log($"{gameObject.name} used {item.itemName}");
+        if (item is Consumable consumable) {
+            consumable.Consume(this);
+            inventory.Remove(item);
+            Debug.Log($"{gameObject.name} used {item.itemName}");
+        }
     }
 
     public override void EquipItem(Equipment equipment)  {
