@@ -1,16 +1,33 @@
 using UnityEngine;
 
 public abstract class Character : MonoBehaviour {
+  //Basic movement and health variables
   [SerializeField] protected float moveSpeed = 5f;
   [SerializeField] protected int maxHealth = 100;
   [SerializeField] protected float jumpForce = 10f;
+  protected int currentHealth;
+  protected bool isGrounded;
+
+  // Dodging variables
   [SerializeField] protected float dodgeDistance = 5f;
   [SerializeField] protected float dodgeDuration = 0.25f;
   [SerializeField] protected float dodgeCooldown = 1f;
   protected bool isDodging = false;
   protected bool canDodge = true;
-  protected int currentHealth;
-  protected bool isGrounded;
+
+  // Inventory variables
+  protected List<Item> inventory = new List<Item>();
+  protected Dictionary<string, Equipment> equippedItems = new Dictionary<string, Equipment>();
+
+  // Inventory abstract methods
+  public abstract bool AddItem(Item item);
+  public abstract bool RemoveItem(Item item);
+  public abstract void UseItem(Item item);
+
+  // Equioment abstract methods
+  public abstract void EquipItem(Equipment equipment);
+  public abstract void UnequipItem(Equipment equipment);
+  public abstract bool CanEquip(Equipment equipment);
 
   // A reference to the character's Rigidbody, for physics-based movement.
   protected Rigidbody2D body;
