@@ -3,20 +3,35 @@ using UnityEngine;
 public abstract class Character : MonoBehaviour {
   [SerializeField] protected float moveSpeed = 5f;
   [SerializeField] protected int maxHealth = 100;
+  [SerializeField] protected float jumpForce = 10f;
   protected int currentHealth;
+  protected bool isGrounded;
 
   //A reference to the character's Rigidbody, for physics-based movement.
   protected Rigidbody2D body;
+  protected Animator animator;
+
+  // Store active status effects.
+  protected List<StatusEffect> activeStatusEffects = new List<StatusEffect>();
 
   protected virtual void Awake() {
     body = GetComponent<Rigidbody2D>();
-    if (body == null) {
-      Debug.LogError("Rigidbody component not found on " + gameObject.name);
-    }
+    animator = GetComponentinChildren<Animator>();
   }
 
   protected virtual void Start() {
     currentHealth = maxHealth;
+  }
+
+  protected virtual void Update() {
+    // Update status effects.
+    for (int i = activeStatusEffects.Count - 1; i >= 0; i--) {
+      activeStatusEffects[i].OnUpdate();
+      if (activeStatusEffects[i].IsFinished) {
+        activeStatusEffects[i].OnEnd();
+        activeStatusEffects.RemoveAt(i);
+      }
+    }
   }
 
   public virtual void TakeDamage(int damageAmount) {
@@ -30,8 +45,36 @@ public abstract class Character : MonoBehaviour {
 
   public abstract void Attack();
 
+  protected virtual void Jump() {
+    if (isGrounded) {
+      body.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+      if (animator != null) {
+        animator.SetTrigger("Jump");
+      }
+    }
+  }
+
+  public void ApplyStatusEffect(StatusEffect effect) {
+    effect.OnApply(this);
+    activeStatusEffect.Add(effect);
+  }
+
   protected virtual void Die() {
     Debug,Log(gameObject.name + " has died.");
-    Destroy(gameObject);
+    if animator != null) {
+      animator.SetBool("IsDead", true);
   }
+
+  protected virtual void OnCollisionExit(Collision other) {
+      if(other.gameObject.CompareTag("Ground")) {
+        isGrounded = false;
+      }
+    }
+  }
+
+public abstract class StatusEffect {
+  public abstract void OnApply(Character target);
+  public abstract void OnUpdate();
+  public abstract void OnEnd();
+  public bool IsFinished { get; protected set; }
 }
