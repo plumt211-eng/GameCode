@@ -1,0 +1,13 @@
+using UnityEngine;
+
+[CreateAssetMenu(fileName = "NewConsumable", menuName = "Inventory/Consumable")]
+public class Consumable : Item
+{
+    public int healAmount;
+
+    public void Consume(Character target)
+    {
+        target.currentHealth = Mathf.Min(target.currentHealth + healAmount, target.maxHealth);
+        Debug.Log($"{target.name} healed for {healAmount} HP!");
+    }
+}
