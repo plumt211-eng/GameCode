@@ -1,35 +1,11 @@
 using UnityEngine;
 
 public class Player : Character {
-    protected override void Update() {
-        base.Update();
-
-        Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
-        bool sprintInput = Input.GetKey(KeyCode.LeftShift);
-
-        SetSprinting(sprintInput);
-        Move(input);
-
-        if (Input.GetKeyDown(KeyCode.Space)) {
-            Dodge(input);
-        }
-
-        if (Input.GetMouseButtonDown(0)) {
-            Attack();
-        }
-    }
-
-    // -------------------------------------------------------
-    // ATTACK
-    // -------------------------------------------------------
     public override void Attack() {
         Debug.Log($"{gameObject.name} attacks!");
         animator?.SetTrigger("Attack");
     }
 
-    // -------------------------------------------------------
-    // INVENTORY & EQUIPMENT
-    // -------------------------------------------------------
     public override bool AddItem(Item item) {
         inventory.Add(item);
         return true;
