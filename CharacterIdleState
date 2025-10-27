@@ -28,5 +28,12 @@ public class CharacterIdleState : CharacterState {
             character.ChangeState(new CharacterAttackState(character));
         }
     }
+
+    public override void HandleInput() {
+        if (Input.GetKeyDown(KeyCode.Tab)) {
+            player.stateMachine.ChangeState(player.inventoryState);
+            return;
+        }
+    }
 }
 
