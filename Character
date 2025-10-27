@@ -1,0 +1,37 @@
+using UnityEngine;
+
+public abstract class Character : MonoBehaviour {
+  [SerializeField] protected float moveSpeed = 5f;
+  [SerializeField] protected int maxHealth = 100;
+  protected int currentHealth;
+
+  //A reference to the character's Rigidbody, for physics-based movement.
+  protected Rigidbody2D body;
+
+  protected virtual void Awake() {
+    body = GetComponent<Rigidbody2D>();
+    if (body == null) {
+      Debug.LogError("Rigidbody component not found on " + gameObject.name);
+    }
+  }
+
+  protected virtual void Start() {
+    currentHealth = maxHealth;
+  }
+
+  public virtual void TakeDamage(int damageAmount) {
+    currentHealth -= damageAmount;
+    Debug.Log(gameObject.name + " took " + damageAmount + " damage. Current health: " + currentHealth);
+
+    if (currentHealth <=0) {
+      Die();
+    }
+  }
+
+  public abstract void Attack();
+
+  protected virtual void Die() {
+    Debug,Log(gameObject.name + " has died.");
+    Destroy(gameObject);
+  }
+}
