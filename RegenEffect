@@ -3,9 +3,16 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "RegenEffect", menuName = "Status Effects/Regen")]
 public class RegenEffect : StatusEffect {
   public float healPerTick = 5f;
+  private float tickTimer = 1f;
 
-  public override void OnTick(Character target) {
-    target.Heal(healPerTick);
-    Debug.Log($"{target.name} regains {healPerTick} health from regeneration!");
+  public override void OnUpdate(float deltaTime) {
+    base.OnUpdate(deltaTime);
+    tickTimer -= deltaTime;
+
+    if(tickTimer <= 0f) {
+      tickTimer = 1f;
+      target.TakeDamage(-healPerSecond); //negative = heal
+      Debug.Log($"{target.characterName} regenerates {healPerSecond} HP!");
+    }
   }
 }
