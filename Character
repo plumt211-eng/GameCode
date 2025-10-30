@@ -17,7 +17,7 @@ public abstract class Character : MonoBehaviour {
     [HideInInspector] public Rigidbody2D body;
     [HideInInspector] public Animator animator;
 
-    [Header("State Flags")]
+    // State Flags
     [HideInInspector] public bool isDodging = false;
     [HideInInspector] public bool canDodge = true;
     [HideInInspector] public bool isInvincible = false;
@@ -45,13 +45,13 @@ public abstract class Character : MonoBehaviour {
     protected virtual void Update() {
         // Update active status effects
         for (int i = activeStatusEffects.Count - 1; i >= 0; i--) {
-            activeStatusEffects[i].OnUpdate();
-            if (activeStatusEffects[i].IsFinished) {
-                activeStatusEffects[i].OnEnd();
+            effecet.OnUpdate(Time.deltaTime);
+
+            if (effect.IsFinished) {
+                effect.OnEnd();
                 activeStatusEffects.RemoveAt(i);
             }
         }
-
         currentState?.Update();
     }
 
@@ -105,7 +105,21 @@ public abstract class Character : MonoBehaviour {
     public abstract bool CanEquip(Equipment equipment);
 
     public void ApplyStatusEffect(StatusEffect effect) {
-        effect.OnApply(this);
-        activeStatusEffects.Add(effect);
+        // Check if effect already exists
+        StatusEffect existing = activeStatusEffect.Find(e => e.effectName == effect.effectName);
+
+        if (existing != null) {
+            if (effect.isStackable) {
+                activeStatusEffects.Add(Instantiate(effect)); // new independent instance of effect
+            } else if (effect.refreshonReapply) {
+                existing.OnApply(this); // refresh timer
+            }
+            return;
+        }
+
+        // Apply new effect
+        StatusEffect instance = Instantiate(effect); //duplicate ScriptableObject instance
+        instance.OnApply(this);
+        activeStatusEffects.Add(instance);
     }
 }
