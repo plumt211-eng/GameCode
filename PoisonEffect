@@ -2,10 +2,22 @@ using UnityEngine;
 
 [CreateAssetMenu(fileName = "PoisonEffect", menuName = "Status Effects/Poison")]
 public class PoisonEffect : StatusEffect {
-  public float damagePerTick = 5f;
+  public int damagePerSecond = 5;
+  private float tickTimer = 1f;
 
-  public override void OnTick(Character target) {
-    target.TakeDamage(damagePerTick);
-    Debug.Log($"{target.name} takes {damagePerTick} poison damage!");
+  public override void OnUpdate(float deltaTime) {
+    base.OnUpdate(deltaTime);
+    tickTimer -= deltaTime;
+
+    if (tickTimer <= 0f) {
+      tickTimer = 1f;
+      target.TakeDamage(damagePerSecond);
+      Debug.Log($"{target.characterName} takes {damagePerSecond} poison damage!");
+    }
+  }
+
+  public override void OnEnd() {
+    base.OnEnd();
+    Debug.Log($"target.characterName} is no longer poisoned.");
   }
 }
