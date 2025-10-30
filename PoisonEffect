@@ -1,0 +1,10 @@
+using UnityEngine;
+
+public class PoisonEffect : StatusEffect {
+  public float damagePerSecond;
+
+  public override void OnApply(Character target) {
+    base.OnApply(Character target)
+    Debug.Log(${target.name} is poisoned! Taking {damagePerSecond} damage per second.");
+  }
+}
