@@ -1,10 +1,11 @@
 using UnityEngine;
 
+[CreateAssetMenu(fileName = "PoisonEffect", menuName = "Status Effects/Poison")]
 public class PoisonEffect : StatusEffect {
-  public float damagePerSecond;
+  public float damagePerTick = 5f;
 
-  public override void OnApply(Character target) {
-    base.OnApply(Character target)
-    Debug.Log(${target.name} is poisoned! Taking {damagePerSecond} damage per second.");
+  public override void OnTick(Character target) {
+    target.TakeDamage(damagePerTick);
+    Debug.Log($"{target.name} takes {damagePerTick} poison damage!");
   }
 }
