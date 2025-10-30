@@ -1,0 +1,18 @@
+using UnityEngine;
+
+public class StatusEffect : ScriptableObject {
+  public string effectName;
+  public float duration;
+
+  public virtual void OnApply(Character target) {
+    Debug.Log(${target.name} is now affected by {effectName}!");
+  }
+
+  public virtual void OnTick(Character target) {
+    // Called every second or frame
+  }
+
+  public virtual void OnExpire(Character target) {
+    // Called when the effect duration ends
+  }
+}
