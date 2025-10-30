@@ -1,0 +1,11 @@
+using UnityEngine;
+
+[CreateAssetMenu(fileName = "RegenEffect", menuName = "Status Effects/Regen")]
+public class RegenEffect : StatusEffect {
+  public float healPerTick = 5f;
+
+  public override void OnTick(Character target) {
+    target.Heal(healPerTick);
+    Debug.Log($"{target.name} regains {healPerTick} health from regeneration!");
+  }
+}
