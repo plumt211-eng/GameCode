@@ -1,8 +1,0 @@
-using UnityEngine;
-
-public class abstract CharacterHelper : MonoBehaviour {
-  public void Enter() {}
-  public void Do() {}
-  public void FixedDo() {}
-  public void Exit() {}
-

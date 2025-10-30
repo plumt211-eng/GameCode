@@ -1,0 +1,21 @@
+using UnityEngine;
+
+public class abstract HealthHelper : MonoBehaviour {
+  protected float MaxHealth maxHealth;
+  protected float currentHealth CurrentHealth;
+  protected float ArmorRating armorRating;
+  protected float MaxArmorRating maxArmorRating;
+
+  protected virtual void Start() {
+    currentHealth = maxHealth;
+    armorRating = maxArmorRating;
+  }
+
+  protected virtual void Update() {
+
+  }
+}
+    
+  
+  
+
