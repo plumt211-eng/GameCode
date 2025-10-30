@@ -1,18 +1,28 @@
 using UnityEngine;
 
 public class StatusEffect : ScriptableObject {
+  [Header("Effect Settings")]
   public string effectName;
   public float duration;
+  public bool isStackable = false;
+  public bool refreshOnReapply = true;
+
+  protected float elapsedTime;
+  protected Character target;
+
+  public bool IsFinished => elapsedTime >= duration;
 
   public virtual void OnApply(Character target) {
+    this.target = target;
+    elapsedTime = 0f;
     Debug.Log(${target.name} is now affected by {effectName}!");
   }
 
-  public virtual void OnTick(Character target) {
-    // Called every second or frame
+  public virtual void OnUpate(float deltaTime) {
+    elapsedTime += deltaTime;
   }
 
-  public virtual void OnExpire(Character target) {
+  public virtual void OnEnd() {
     Debug.Log($"{effectName} on {target.name} has ended.");
   }
 }
