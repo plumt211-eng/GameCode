@@ -13,6 +13,6 @@ public class StatusEffect : ScriptableObject {
   }
 
   public virtual void OnExpire(Character target) {
-    // Called when the effect duration ends
+    Debug.Log($"{effectName} on {target.name} has ended.");
   }
 }
